@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      min_seats:
+        description: "Seats needed to count as open (0 sends a test alert for every slot)"
+        default: "1"
 
 concurrency:
   group: watch
@@ -29,8 +33,10 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RUN_SECONDS: "270"
+          MIN_SEATS: ${{ inputs.min_seats || '1' }}
+      # A test run marks every slot as announced, so it must not save that state.
       - uses: actions/cache/save@v4
-        if: always()
+        if: always() && (inputs.min_seats || '1') == '1'
         with:
           path: state.json
           key: state-${{ github.run_id }}
