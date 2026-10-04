@@ -6,6 +6,8 @@ Bot commands: /start, /status.
 RUN_SECONDS: check for that long and exit, with no bot commands (for scheduled CI runs).
 """
 
+from __future__ import annotations
+
 import gzip
 import http.cookiejar
 import json
