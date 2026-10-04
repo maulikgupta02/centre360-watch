@@ -1,0 +1,11 @@
+name = "centre360-watch"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[triggers]
+crons = ["* * * * *"]
+
+# Run `npx wrangler kv namespace create STATE` once and paste the id here.
+[[kv_namespaces]]
+binding = "STATE"
+id = "REPLACE_ME"

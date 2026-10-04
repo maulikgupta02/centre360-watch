@@ -1,3 +1,7 @@
 state.json
 .env
 __pycache__/
+watch.log
+.dev.vars
+.wrangler/
+node_modules/
