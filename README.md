@@ -1,26 +1,30 @@
 # centre360-watch
 
-Polls https://a856-centre360.nyc.gov/Book for open visit slots and messages you on Telegram.
-Python 3.9+ stdlib only.
+Watches https://a856-centre360.nyc.gov/Book for open visit slots and messages Telegram
+(@JagaoBot) once per newly opened slot.
 
-1. Create a bot with @BotFather and copy its token. Use a new bot, not Jojo's: two processes
-   long-polling one token steal each other's updates.
-2. `TELEGRAM_BOT_TOKEN=... python3 watch.py`, then send `/start` to the bot. It replies with your chat id.
-3. Restart with `TELEGRAM_CHAT_ID=<id>` set as well.
+## Live: Cloudflare Worker (`worker/`)
 
-Optional: `POLL_SECONDS` (default 60; drops to 10s on the 1st of the month, 9-11am ET, when new
-slots are released), `MIN_SEATS` (default 1). Bot commands: `/status`.
+A cron trigger checks every minute, and the Telegram webhook answers `/start` and `/status`
+(`/status` runs a live check). It stays on the free plan: about 1,440 runs a day, KV is written
+only when the set of open slots changes, and each run makes at most 50 subrequests (past 40 open
+dates it announces by date, without times).
 
-Run in the background: `nohup python3 watch.py > watch.log 2>&1 &`
+```
+cd worker
+npx wrangler deploy                          # needs CLOUDFLARE_API_TOKEN or `wrangler login`
+printf '%s' "$VALUE" | npx wrangler secret put TELEGRAM_BOT_TOKEN   # also TELEGRAM_CHAT_ID, WEBHOOK_SECRET
+npx wrangler dev --test-scheduled            # local; secrets in worker/.dev.vars
+```
 
-## GitHub Actions
+After changing `WEBHOOK_SECRET`, re-register the webhook:
+`curl "https://api.telegram.org/bot<token>/setWebhook" -d url=https://centre360-watch.maulikgupta02.workers.dev/ -d secret_token=<secret>`
 
-`.github/workflows/watch.yml` runs every 5 minutes. Each run checks every `POLL_SECONDS` for 270s,
-then exits, so coverage is close to continuous. Bot commands don't work in this mode. Get the
-chat id by running it locally once.
+## Fallbacks
 
-- Add repo secrets `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
-- Use a public repo. Actions minutes are free there, and this needs about 8,600 a month, well over
-  a private repo's free 2,000.
-- GitHub turns scheduled workflows off after 60 days with no repo activity. Re-enable it from the
-  Actions tab.
+- `watch.py` (Python 3.9+, stdlib only) is the same checker as a local loop:
+  `TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=... python3 watch.py`. Its `/start` and `/status` only
+  work while the Telegram webhook is deleted (`deleteWebhook`). Env: `POLL_SECONDS` (60),
+  `MIN_SEATS` (1).
+- `.github/workflows/watch.yml` runs `watch.py` on Actions. It is **disabled**, because GitHub ran
+  the 5-minute schedule only every 3–6 hours. A manual run with `min_seats=0` still sends a test alert.
