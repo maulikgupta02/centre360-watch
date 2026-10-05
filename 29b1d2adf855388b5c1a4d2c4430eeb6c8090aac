@@ -1,0 +1,23 @@
+worker/src/index.js
+  b2175b9db7deec46 1-2,7-10,12-24,26,31,35,42-44,49-73,81,83,88,93-94,98,113,119,133-134,139-145,147-148,153-155,158-164,173-174,176-182,184
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "29b1d2adf855388b5c1a4d2c4430eeb6c8090aac",
+  "prompts": {
+    "b2175b9db7deec46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da5f5ce8-876d-46b6-8540-fd347aa3c5a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Maulik Gupta <guptamaulik16@gmail.com>",
+      "messages": [],
+      "total_additions": 91,
+      "total_deletions": 23,
+      "accepted_lines": 91,
+      "overriden_lines": 0
+    }
+  }
+}
