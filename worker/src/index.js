@@ -133,7 +133,8 @@ function slotTime(slot) {
   return `${slot.date} ${String((Number(h) % 12) + (ap.toUpperCase() === "PM" ? 12 : 0)).padStart(2, "0")}:${m}`;
 }
 
-// Books the earliest open slot for the owner, once. Returns a message for the owner, or null.
+// Books the earliest open slot for the owner, once. Returns a message for the owner and
+// BOOKING.shareWith, or null.
 async function autobook(env, sess, openSlots) {
   if (!env.BOOKING || (await env.STATE.get("booked")) !== null) return null;
   const who = JSON.parse(env.BOOKING);
@@ -213,7 +214,11 @@ export default {
     try {
       const { sess, alert, openSlots } = await check(env, budget);
       const booked = await autobook(env, sess, openSlots);
-      if (booked) outbox.unshift({ chat: String(env.TELEGRAM_CHAT_ID), text: booked });
+      if (booked) {
+        const shareWith = JSON.parse(env.BOOKING).shareWith || [];
+        const chats = [...new Set([String(env.TELEGRAM_CHAT_ID), ...shareWith.map(String)])];
+        outbox.unshift(...chats.map((chat) => ({ chat, text: booked })));
+      }
       if (alert) outbox.push(...(await recipients(env)).map((chat) => ({ chat, text: alert })));
       if ((await env.STATE.get("failures")) !== null) await env.STATE.delete("failures");
     } catch (err) {
