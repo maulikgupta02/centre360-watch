@@ -6,11 +6,13 @@ Watches https://a856-centre360.nyc.gov/Book for open visit slots and messages Te
 ## Live: Cloudflare Worker (`worker/`)
 
 A cron trigger checks every minute and alerts every subscriber. The Telegram webhook handles
-`/start` (subscribe), `/stop` and `/status`
-(`/status` runs a live check). Subscribers live in KV, and the owner (`TELEGRAM_CHAT_ID`) always gets
-alerts. Messages a run can't send wait in a KV outbox for the next run. It stays on the free plan: about 1,440 runs a day, KV is written
-only when the set of open slots changes, and each run makes at most 50 subrequests (past 40 open
-dates it announces by date, without times).
+`/start` (subscribe), `/stop` and `/status` (a live check). Subscribers are kept in KV, and the
+owner (`TELEGRAM_CHAT_ID`) always gets alerts.
+
+It stays on the free plan: about 1,440 runs a day, and KV is written only when something changes.
+Each run makes at most 50 subrequests, with 20 kept for sending. If more dates are open than the
+rest can cover, the extra dates are announced without times. Messages a run can't send wait in a
+KV outbox for the next run.
 
 ```
 cd worker
