@@ -6,7 +6,7 @@ workers_dev = true
 preview_urls = false
 
 [triggers]
-crons = ["* * * * *"]
+crons = []
 
 [[kv_namespaces]]
 binding = "STATE"
